@@ -36,7 +36,7 @@ route.get('/landings/mass/:mass', async (req, res, next) => {
     });
   } catch (error) {
     const errorMessage =
-      'Error al buscar meteoritos cuya masa sea igual o superior a una masa (gr) dada';
+      'Error al buscar meteoritos cuya masa sea igual a una masa (gr) dada';
     console.error(`${errorMessage}: `, error.message);
     next(new Error(errorMessage));
   }

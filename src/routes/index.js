@@ -1,6 +1,6 @@
 const route = require('express').Router();
 
-// Middlewares para el enrutado general
-// ...
+
+route.use('/astronomy', require('./landings'))
 
 module.exports = route;

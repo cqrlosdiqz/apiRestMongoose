@@ -1,6 +1,23 @@
-const mongoose = require('mongoose');
+const { connect, connection } = require('mongoose');
 
-// Configuración de conexión de base de datos
-// ...
+const URI = process.env.MONGODB_URI;
 
-module.exports = mongoose;
+(async function dbConnect() {
+  try {
+    await connect(URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.info('Connected to MongoDB');
+  } catch (error) {
+    console.error('Error de conexión con MongoDB: ', error.message);
+    process.exit(0);
+  }
+})();
+
+process.on('SIGINT', () => {
+  connection.close(() => {
+    console.info('Desconexión realizada con MongoDB');
+    process.exit(0);
+  });
+});

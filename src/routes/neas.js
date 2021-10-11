@@ -1,5 +1,5 @@
 const route = require('express').Router();
-const LandingsModel = require('../models/Neas');
+const NeasModel = require('../models/Neas');
 
 // 1. GET para obtener la designación y el período anual en base a la clase orbital del asteroide (con query params)
 //     - Ejemplo: `/astronomy/neas?class=aten`
@@ -8,7 +8,7 @@ route.get('/neas', async (req, res, next) => {
   if (!orbitClass) return next();
   const regex = new RegExp(`^${orbitClass}`, 'i');
   try {
-    const result = await LandingsModel.find(
+    const result = await NeasModel.find(
       { orbitClass: { $in: regex } },
       { orbitClass: 1, designation: 1, periodYr: 1, _id: 0 }
     ).lean();
@@ -35,13 +35,18 @@ route.get('/neas', async (req, res, next) => {
 //   - `YYYY`
 // * El endpoint debe ser compatible con los 3 casos
 route.get('/neas', async (req, res, next) => {
-  const { class: orbitClass } = req.query;
-  if (!orbitClass) return next();
-  const regex = new RegExp(`^${orbitClass}`, 'i');
+  const { from, to } = req.query;
+  if (!from && !to) return next();
+console.log(from, to);
   try {
-    const result = await LandingsModel.find(
-      { orbitClass: { $in: regex } },
-      { orbitClass: 1, designation: 1, periodYr: 1, _id: 0 }
+    const result = await NeasModel.find(
+      {
+        $or: [
+          { discoveryDate: { $gte: parseInt(from) } },
+          { discoveryDate: { $lte: parseInt(to) } },
+        ],
+      },
+      { designation: 1, discoveryDate: 1, periodYr: 1, _id: 0 }
     ).lean();
 
     res.status(200).send({
@@ -50,10 +55,11 @@ route.get('/neas', async (req, res, next) => {
     });
   } catch (error) {
     const errorMessage =
-      'Error al obtener la designación y el período anual en base a la clase orbital del asteroide';
+      'Error al obtener designación, fecha y período anual de todos los asteroides que cumplan el filtro de fechas dadas';
     console.error(`${errorMessage}: `, error.message);
     next(new Error(errorMessage));
   }
 });
+
 
 module.exports = route;
